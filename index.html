@@ -6,70 +6,86 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <div class="icon">🕶️</div>
-    <h1>Send Anonymous Message</h1>
+    <div class="container">
+        <div class="icon">🕶️</div>
+        <h1>Send me Anonymous Message here</h1>
+        <form id="messageForm">
+            <div class="form-group">
+                <textarea
+                    name="message"
+                    id="messageInput"
+                    placeholder="Promise, anonymous talaga 'to.
+- GM"
+                    required
+                ></textarea>
+            </div>
+            <button type="submit" id="submitBtn">
+                <span>Click mo dito para ma send.</span>
+            </button>
+        </form>
 
-    <form id="messageForm">
-        <textarea name="message" id="messageInput" placeholder="Type here..." required></textarea>
-        <button type="submit" id="submitBtn">Send</button>
-    </form>
-
-    <div class="success-message" id="successMessage" style="display:none;">
-        Message received.
-        <div id="countdown"></div>
+        <div class="success-message" id="successMessage" style="display: none;">
+            Na receive ko na. Wait ka nalang na ma post ko sa comment sec. mwehehe.😁
+            <div class="countdown" id="countdown"></div>
+        </div>
     </div>
-</div>
 
-<script>
-const form = document.getElementById("messageForm");
-const btn = document.getElementById("submitBtn");
-const success = document.getElementById("successMessage");
-const countdown = document.getElementById("countdown");
+    <script>
+        const form = document.getElementById('messageForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+        const countdown = document.getElementById('countdown');
+        const messageInput = document.getElementById('messageInput');
 
-form.addEventListener("submit", function(e) {
-    e.preventDefault();
+        form.addEventListener('submit', function(e) {
+            // 1. STOP the browser from going to the black JSON screen
+            e.preventDefault();
 
-    btn.disabled = true;
-    btn.textContent = "Sending...";
+            // 2. Show "Sending..." status
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Sending...</span>';
 
-    fetch("/send", {
-        method: "POST",
-        body: new FormData(form)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "success") {
-            form.style.display = "none";
-            success.style.display = "block";
-            startCountdown();
-        } else {
-            alert(data.message);
-            btn.disabled = false;
-            btn.textContent = "Send";
+            const formData = new FormData(form);
+
+            // 3. Send data to Flask in the background
+            fetch('/send', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 4. Hide the form and show your success div
+                    form.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    startCountdown();
+                } else {
+                    alert("Error: " + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Click mo dito to send</span>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Server error. Make sure main.py is running!");
+                submitBtn.disabled = false;
+            });
+        });
+
+        function startCountdown() {
+            let seconds = 3;
+            countdown.textContent = `Page will refresh in ${seconds} seconds...`;
+
+            const interval = setInterval(() => {
+                seconds--;
+                if (seconds > 0) {
+                    countdown.textContent = `Page will refresh in ${seconds} seconds...`;
+                } else {
+                    clearInterval(interval);
+                    window.location.reload();
+                }
+            }, 1000);
         }
-    })
-    .catch(() => {
-        alert("Server error.");
-        btn.disabled = false;
-        btn.textContent = "Send";
-    });
-});
-
-function startCountdown() {
-    let seconds = 3;
-    countdown.textContent = `Refreshing in ${seconds}...`;
-
-    const i = setInterval(() => {
-        seconds--;
-        if (seconds <= 0) {
-            clearInterval(i);
-            window.location.reload();
-        } else {
-            countdown.textContent = `Refreshing in ${seconds}...`;
-        }
-    }, 1000);
-}
-</script>
+    </script>
 </body>
 </html>
