@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 from supabase import create_client, Client
 
 # --- Flask setup ---
-app = Flask(__name__, template_folder='../', static_folder='../')
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.secret_key = os.environ.get("SECRET_KEY", "pogi_si_gm_12345")
 
 # --- Supabase setup ---
