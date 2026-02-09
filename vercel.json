@@ -1,6 +1,3 @@
-{
-  "version": 2,
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index" }
-  ]
-}
+flask
+supabase
+httpx<0.24.0
