@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inbox</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container" style="max-width:600px;">
+    <h1>Inbox</h1>
+
+    {% if messages %}
+        {% for msg in messages %}
+        <div class="message-item">
+            <p>{{ msg['content'] }}</p>
+            <span class="time">{{ msg['timestamp'] }}</span>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No messages yet.</p>
+    {% endif %}
+
+    <br>
+    <a href="/">Back</a>
+</div>
+</body>
+</html>

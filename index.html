@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Send Anonymous Message</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+    <div class="icon">🕶️</div>
+    <h1>Send Anonymous Message</h1>
+
+    <form id="messageForm">
+        <textarea name="message" id="messageInput" placeholder="Type here..." required></textarea>
+        <button type="submit" id="submitBtn">Send</button>
+    </form>
+
+    <div class="success-message" id="successMessage" style="display:none;">
+        Message received.
+        <div id="countdown"></div>
+    </div>
+</div>
+
+<script>
+const form = document.getElementById("messageForm");
+const btn = document.getElementById("submitBtn");
+const success = document.getElementById("successMessage");
+const countdown = document.getElementById("countdown");
+
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    fetch("/send", {
+        method: "POST",
+        body: new FormData(form)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            form.style.display = "none";
+            success.style.display = "block";
+            startCountdown();
+        } else {
+            alert(data.message);
+            btn.disabled = false;
+            btn.textContent = "Send";
+        }
+    })
+    .catch(() => {
+        alert("Server error.");
+        btn.disabled = false;
+        btn.textContent = "Send";
+    });
+});
+
+function startCountdown() {
+    let seconds = 3;
+    countdown.textContent = `Refreshing in ${seconds}...`;
+
+    const i = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+            clearInterval(i);
+            window.location.reload();
+        } else {
+            countdown.textContent = `Refreshing in ${seconds}...`;
+        }
+    }, 1000);
+}
+</script>
+</body>
+</html>
