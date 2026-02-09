@@ -4,23 +4,22 @@
     <title>Inbox</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="container" style="max-width:600px;">
-    <h1>Inbox</h1>
-
-    {% if messages %}
-        {% for msg in messages %}
-        <div class="message-item">
-            <p>{{ msg['content'] }}</p>
-            <span class="time">{{ msg['timestamp'] }}</span>
+<div class="container" style="max-width: 600px;">
+        <h1>Inbox 📥</h1>
+        <div class="message-list">
+            {% if messages %}
+                {% for msg in messages %}
+                <div class="message-item">
+                    <p>{{ msg['content'] }}</p>
+                    <span class="time">{{ msg['timestamp'] }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-messages">No messages yet. Send one to test!</p>
+            {% endif %}
         </div>
-        {% endfor %}
-    {% else %}
-        <p>No messages yet.</p>
-    {% endif %}
-
-    <br>
-    <a href="/">Back</a>
-</div>
+        <br>
+        <a href="/" style="color: white; text-decoration: none; font-size: 0.8rem;">← Back to Home</a>
+    </div>
 </body>
 </html>
