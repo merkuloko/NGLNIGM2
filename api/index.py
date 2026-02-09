@@ -69,3 +69,6 @@ def admin_login():
         return redirect("/view-messages-99")
 
     return "Wrong password. <a href='/view-messages-99'>Try again</a>"
+
+print("Supabase URL:", SUPABASE_URL)
+print("Supabase key exists:", bool(SUPABASE_KEY))
