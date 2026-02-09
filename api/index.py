@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 from supabase import create_client, Client
 
 # --- Flask setup ---
-app = Flask(__name__, template_folder='../templates', static_folder='../static')
+app = Flask(__name__, template_folder='../', static_folder='../')
 app.secret_key = os.environ.get("SECRET_KEY", "pogi_si_gm_12345")
 
 # --- Supabase setup ---
@@ -57,17 +57,16 @@ def view_messages():
         """
 
     if supabase is None:
-        return "Database not configured"
+    return "Database not configured"
 
-    try:
+try:
         response = supabase.table("anonymous_messages") \
             .select("*") \
             .order("timestamp", desc=True) \
             .execute()
         return render_template("admin.html", messages=response.data)
-    except Exception as e:
-        return f"Error: {e}"
-
+except Exception as e:
+    return f"Error: {e}"
 # --- Admin login ---
 @app.route("/admin-login", methods=["POST"])
 def admin_login():
