@@ -74,7 +74,7 @@ def admin_login():
     if request.form.get("password") == "open-sesame":
         session["admin_logged_in"] = True
         return redirect("/view-messages-99")
-    return "Wrong password. <a href='/view-messages-99'>Try again</a>"
+return "Mali password mo, em. <a href='/view-messages-99'>Try mo ulit</a>"
 
 # --- Debug prints ---
 print("Supabase URL:", SUPABASE_URL)
