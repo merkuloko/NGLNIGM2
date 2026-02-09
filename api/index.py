@@ -2,7 +2,7 @@ import os
 from flask import Flask, render_template, request, jsonify, session, redirect
 from supabase import create_client, Client
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../').
 app.secret_key = os.environ.get("SECRET_KEY", "pogi_si_gm_12345")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
