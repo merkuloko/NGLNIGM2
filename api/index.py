@@ -86,3 +86,6 @@ print("Supabase URL:", SUPABASE_URL)
 print("Supabase key exists:", bool(SUPABASE_KEY))
 
 app = app
+
+if __name__ == "__main__":
+    app.run()
