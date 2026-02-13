@@ -17,7 +17,7 @@
             {% for msg in messages %}
             <div class="message-item">
                 <p>{{ msg.get('content', 'No message') }}</p>
-                <span class="time">{{ msg.get('timestamp', '') }}</span>
+                <span class="time">{{ msg.get('created_at', '') }}</span>
             </div>
             {% endfor %}
         {% else %}
