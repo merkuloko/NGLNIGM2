@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Anonymous Message</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🕶️</div>
+        <h1>Send me Anonymous Message here</h1>
+        <form id="messageForm">
+            <div class="form-group">
+                <textarea
+                    name="message"
+                    id="messageInput"
+                    placeholder="Promise, anonymous talaga 'to.
+- GM"
+                    required
+                ></textarea>
+            </div>
+            <button type="submit" id="submitBtn">
+                <span>Click mo dito para ma send.</span>
+            </button>
+        </form>
+
+        <div class="success-message" id="successMessage" style="display: none;">
+            Na receive ko na. Basahin ko nalang laterrr. 😁
+            <div class="countdown" id="countdown"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('messageForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+        const countdown = document.getElementById('countdown');
+        const messageInput = document.getElementById('messageInput');
+
+        form.addEventListener('submit', function(e) {
+            // 1. STOP the browser from going to the black JSON screen
+            e.preventDefault();
+
+            // 2. Show "Sending..." status
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Sending...</span>';
+
+            const formData = new FormData(form);
+
+            // 3. Send data to Flask in the background
+            fetch('/send', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 4. Hide the form and show your success div
+                    form.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    startCountdown();
+                } else {
+                    alert("Error: " + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Click mo dito to send</span>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Server error. Make sure index.py is running!");
+                submitBtn.disabled = false;
+            });
+        });
+
+        function startCountdown() {
+            let seconds = 3;
+            countdown.textContent = `Page will refresh in ${seconds} seconds...`;
+
+            const interval = setInterval(() => {
+                seconds--;
+                if (seconds > 0) {
+                    countdown.textContent = `Page will refresh in ${seconds} seconds...`;
+                } else {
+                    clearInterval(interval);
+                    window.location.reload();
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
