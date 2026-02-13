@@ -63,7 +63,7 @@ def view_messages():
         response = (
             supabase.table("anonymous_messages")
             .select("*")
-            .order("timestamp", desc=True)
+            .order("created_at", desc=True)
             .execute()
         )
         return render_template("admin.html", messages=response.data)
