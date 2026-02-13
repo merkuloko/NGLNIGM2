@@ -60,14 +60,15 @@ def view_messages():
         return "Database not configured"
 
     try:
-        response = (
-        supabase.table("anonymous_messages")
-        .select("*")
-        .order("timestamp", desc=True)
-        .execute()
-        )
+    response = supabase.table("anonymous_messages")\
+    .select("*")\
+    .order("timestamp", desc=True)\
+    .execute()
 
-        return render_template("admin.html", messages=response.data)
+    messages = response.data if response.data else []
+
+    return render_template("admin.html", messages=messages)
+
     except Exception as e:
         return f"Error: {e}"
 
