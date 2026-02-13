@@ -80,4 +80,4 @@ def admin_login():
 print("Supabase URL:", SUPABASE_URL)
 print("Supabase key exists:", bool(SUPABASE_KEY))
 
-app=app
+app = app
