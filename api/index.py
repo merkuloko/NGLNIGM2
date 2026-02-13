@@ -79,3 +79,5 @@ def admin_login():
 # --- Debug prints ---
 print("Supabase URL:", SUPABASE_URL)
 print("Supabase key exists:", bool(SUPABASE_KEY))
+
+app=app
