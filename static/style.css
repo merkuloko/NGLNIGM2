@@ -82,6 +82,10 @@ h1 {
     text-align: center;
 }
 
+.centered-title {
+    text-align: center;
+}
+
 .intro,
 .form-meta,
 .message-meta,
