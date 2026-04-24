@@ -1,69 +1,156 @@
+import hmac
 import os
-from flask import Flask, render_template, request, jsonify, session, redirect
-from supabase import create_client, Client
+import secrets
+import time
 
-# --- Flask setup ---
+from flask import Flask, abort, jsonify, redirect, render_template, request, session, url_for
+from supabase import create_client
+
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MESSAGE_MAX_LENGTH = 1000
+LOGIN_WINDOW_SECONDS = 300
+MAX_LOGIN_ATTEMPTS = 5
+
 
 app = Flask(
     __name__,
     template_folder=os.path.join(BASE_DIR, "templates"),
     static_folder=os.path.join(BASE_DIR, "static"),
 )
-app.secret_key = os.environ.get("SECRET_KEY", "pogi_si_gm_12345")
 
-# --- Supabase setup ---
+SECRET_KEY = os.environ.get("SECRET_KEY")
+IS_PRODUCTION = os.environ.get("VERCEL_ENV") == "production"
+
+if not SECRET_KEY:
+    if IS_PRODUCTION:
+        raise RuntimeError("SECRET_KEY is required in production")
+    SECRET_KEY = secrets.token_urlsafe(32)
+    print(
+        "WARNING: SECRET_KEY is not set. Using a generated development key; "
+        "sessions will reset when the process restarts."
+    )
+
+app.config.update(
+    SECRET_KEY=SECRET_KEY,
+    MAX_CONTENT_LENGTH=16 * 1024,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=IS_PRODUCTION,
+)
+
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD") or SECRET_KEY
 
 supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("Supabase initialized successfully")
-    except Exception as e:
-        print("Supabase init failed:", e)
+    except Exception:
+        app.logger.exception("Supabase initialization failed")
 else:
-    print("Supabase env vars missing!")
+    app.logger.warning("Supabase environment variables are missing")
 
-# --- Home page ---
+
+def get_csrf_token():
+    token = session.get("_csrf_token")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["_csrf_token"] = token
+    return token
+
+
+app.jinja_env.globals["csrf_token"] = get_csrf_token
+
+
+def validate_csrf():
+    form_token = request.form.get("csrf_token", "")
+    session_token = session.get("_csrf_token", "")
+    if not form_token or not session_token or not hmac.compare_digest(form_token, session_token):
+        abort(400, description="Invalid CSRF token")
+
+
+def get_login_state():
+    now = int(time.time())
+    state = session.get("login_rate_limit", {"count": 0, "first_attempt": now})
+    elapsed = now - state.get("first_attempt", now)
+    if elapsed > LOGIN_WINDOW_SECONDS:
+        state = {"count": 0, "first_attempt": now}
+    return state
+
+
+def record_failed_login():
+    state = get_login_state()
+    state["count"] += 1
+    session["login_rate_limit"] = state
+
+
+def clear_failed_logins():
+    session.pop("login_rate_limit", None)
+
+
+def is_login_blocked():
+    state = get_login_state()
+    return state["count"] >= MAX_LOGIN_ATTEMPTS
+
+
+@app.errorhandler(400)
+def handle_bad_request(error):
+    if request.path == "/send":
+        return jsonify({"status": "error", "message": "Invalid request."}), 400
+    return render_template("login.html", error=error.description), 400
+
+
+@app.errorhandler(413)
+def handle_large_payload(_error):
+    return jsonify({"status": "error", "message": "Message is too long."}), 413
+
+
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", message_max_length=MESSAGE_MAX_LENGTH)
 
-# --- Send anonymous message ---
+
 @app.route("/send", methods=["POST"])
 def send_message():
-    if supabase is None:
-        return jsonify({"status": "error", "message": "Database not configured"}), 500
+    validate_csrf()
 
-    message_content = request.form.get("message")
+    if supabase is None:
+        app.logger.error("Message submission attempted without database configuration")
+        return jsonify({"status": "error", "message": "Service is unavailable right now."}), 503
+
+    message_content = (request.form.get("message") or "").strip()
     if not message_content:
-        return jsonify({"status": "error", "message": "Message is empty"}), 400
+        return jsonify({"status": "error", "message": "Message cannot be empty."}), 400
+
+    if len(message_content) > MESSAGE_MAX_LENGTH:
+        return jsonify(
+            {
+                "status": "error",
+                "message": f"Message must be {MESSAGE_MAX_LENGTH} characters or fewer.",
+            }
+        ), 400
 
     try:
-        supabase.table("anonymous_messages").insert({
-            "content": message_content
-        }).execute()
+        supabase.table("anonymous_messages").insert({"content": message_content}).execute()
         return jsonify({"status": "success"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+    except Exception:
+        app.logger.exception("Failed to store anonymous message")
+        return jsonify({"status": "error", "message": "Could not send message right now."}), 500
 
-# --- View messages (admin only) ---
-@app.route("/view-messages-99")
+
+@app.route("/view-messages-99", methods=["GET"])
 def view_messages():
     if not session.get("admin_logged_in"):
-        return """
-        <div style="text-align:center;margin-top:50px;font-family:sans-serif;">
-            <form action="/admin-login" method="post">
-                <input type="password" name="password" placeholder="Password?">
-                <button type="submit">Enter</button>
-            </form>
-        </div>
-        """
+        error = None
+        if is_login_blocked():
+            error = "Too many failed attempts. Please wait a few minutes and try again."
+        return render_template("login.html", error=error)
 
     if supabase is None:
-        return "Database not configured"
+        app.logger.error("Admin view attempted without database configuration")
+        return render_template("admin.html", messages=[], error="Database is not configured.")
 
     try:
         response = (
@@ -72,26 +159,48 @@ def view_messages():
             .order("created_at", desc=True)
             .execute()
         )
+        return render_template("admin.html", messages=response.data or [], error=None)
+    except Exception:
+        app.logger.exception("Failed to load anonymous messages")
+        return render_template("admin.html", messages=[], error="Could not load messages right now."), 500
 
-        return render_template("admin.html", messages=response.data)
 
-    except Exception as e:
-        return f"Error: {e}"
-
-
-# --- Admin login ---
 @app.route("/admin-login", methods=["POST"])
 def admin_login():
-    if request.form.get("password") == "open-sesame":
+    validate_csrf()
+
+    if not ADMIN_PASSWORD:
+        app.logger.error("Admin login attempted without ADMIN_PASSWORD or SECRET_KEY configured")
+        return render_template(
+            "login.html",
+            error="Admin access is not configured. Set ADMIN_PASSWORD in Vercel.",
+        ), 503
+
+    if is_login_blocked():
+        return render_template(
+            "login.html",
+            error="Too many failed attempts. Please wait a few minutes and try again.",
+        ), 429
+
+    password = request.form.get("password", "")
+    if hmac.compare_digest(password, ADMIN_PASSWORD):
+        session.clear()
+        session["_csrf_token"] = secrets.token_urlsafe(32)
         session["admin_logged_in"] = True
-        return redirect("/view-messages-99")
-    return "Mali password mo, em. <a href='/view-messages-99'>Try again</a>"
+        clear_failed_logins()
+        return redirect(url_for("view_messages"))
 
-# --- Debug prints ---
-print("Supabase URL:", SUPABASE_URL)
-print("Supabase key exists:", bool(SUPABASE_KEY))
+    record_failed_login()
+    return render_template("login.html", error="Incorrect password."), 401
 
-app = app
+
+@app.route("/admin-logout", methods=["POST"])
+def admin_logout():
+    validate_csrf()
+    session.clear()
+    session["_csrf_token"] = secrets.token_urlsafe(32)
+    return redirect(url_for("view_messages"))
+
 
 if __name__ == "__main__":
     app.run()
