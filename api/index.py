@@ -114,7 +114,7 @@ def handle_bad_request(error):
 
 @app.errorhandler(413)
 def handle_large_payload(_error):
-    return jsonify({"status": "error", "message": "Message is too long."}), 413
+    return jsonify({"status": "error", "message": "Haba masyado. Paki Iklian Please. Send kanalang ulit pagka tapos nito"}), 413
 
 
 @app.route("/")
@@ -132,13 +132,13 @@ def send_message():
 
     message_content = (request.form.get("message") or "").strip()
     if not message_content:
-        return jsonify({"status": "error", "message": "Message cannot be empty."}), 400
+        return jsonify({"status": "error", "message": "Oh? Ba't walang laman? 'di to mas-send kung walang laman."}), 400
 
     if len(message_content) > MESSAGE_MAX_LENGTH:
         return jsonify(
             {
                 "status": "error",
-                "message": f"Message must be {MESSAGE_MAX_LENGTH} characters or fewer.",
+                "message": f"Message must be {MESSAGE_MAX_LENGTH} characters or fewer. Send kanalang uli pagka tapos nito.",
             }
         ), 400
 
@@ -155,7 +155,7 @@ def view_messages():
     if not session.get("admin_logged_in"):
         error = None
         if is_login_blocked():
-            error = "Too many failed attempts. Please wait a few minutes and try again."
+            error = "Too many failed attempts. Wait ka few minutes tapos try mo ulit."
         return render_template("login.html", error=error)
 
     if supabase is None:
