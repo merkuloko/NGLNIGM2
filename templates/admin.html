@@ -9,11 +9,11 @@
 <body>
     <div class="container">
         <div class="admin-header">
-            <div>
+            <div class="admin-title-block">
                 <h1 class="centered-title">Inbox</h1>
             </div>
 
-            <form method="post" action="{{ url_for('admin_logout') }}">
+            <form method="post" action="{{ url_for('admin_logout') }}" class="admin-actions">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="secondary-button">Logout</button>
             </form>
