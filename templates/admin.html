@@ -29,6 +29,7 @@
                 <div class="message-item">
                     <p>{{ msg.get('content', 'No message') }}</p>
                     {% if msg.get('created_at') %}
+
                     <p class="message-meta">{{ msg.get('created_at') }}</p>
                     {% endif %}
                 </div>
