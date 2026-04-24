@@ -7,7 +7,17 @@ from flask import Flask, abort, jsonify, redirect, render_template, request, ses
 from supabase import create_client
 
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+API_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(API_DIR)
+TEMPLATE_DIR = os.path.join(API_DIR, "templates")
+STATIC_DIR = os.path.join(API_DIR, "static")
+
+if not os.path.isdir(TEMPLATE_DIR):
+    TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+
+if not os.path.isdir(STATIC_DIR):
+    STATIC_DIR = os.path.join(BASE_DIR, "static")
+
 MESSAGE_MAX_LENGTH = 1000
 LOGIN_WINDOW_SECONDS = 300
 MAX_LOGIN_ATTEMPTS = 5
@@ -15,8 +25,8 @@ MAX_LOGIN_ATTEMPTS = 5
 
 app = Flask(
     __name__,
-    template_folder=os.path.join(BASE_DIR, "templates"),
-    static_folder=os.path.join(BASE_DIR, "static"),
+    template_folder=TEMPLATE_DIR,
+    static_folder=STATIC_DIR,
 )
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
