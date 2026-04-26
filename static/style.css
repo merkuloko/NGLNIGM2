@@ -247,12 +247,14 @@ button:disabled {
 @media (max-width: 480px) {
     body {
         padding: 1rem;
-        align-items: stretch;
+        /* Changing this from 'stretch' to 'center' fixes the giant empty space! */
+        align-items: center;
     }
 
     .container {
-        padding: 1.25rem;
-        border-radius: 18px;
+        padding: 1.5rem 1.25rem;
+        border-radius: 20px;
+        width: 100%;
     }
 
     .form-meta,
@@ -264,6 +266,11 @@ button:disabled {
 
     .secondary-button {
         width: 100%;
+    }
+
+    h1.page-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.25rem;
     }
 }
 
