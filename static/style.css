@@ -267,3 +267,41 @@ button:disabled {
     }
 }
 
+    /* Wrapper to hold the textarea and the floating button */
+    .textarea-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    /* Ensure typed text doesn't overlap with the dice icon */
+    #messageInput {
+        padding-right: 50px;
+        padding-bottom: 50px;
+    }
+
+    /* The floating Dice button */
+    .dice-btn {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        background: rgba(255, 255, 255, 0.6);
+        border: none;
+        border-radius: 50%;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.2s ease;
+        backdrop-filter: blur(4px);
+    }
+
+    .dice-btn:hover {
+        background: rgba(255, 255, 255, 0.95);
+        transform: scale(1.1) rotate(15deg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }

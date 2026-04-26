@@ -13,15 +13,21 @@
         <form id="messageForm" method="post" action="/send">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <div class="form-group">
+            <form id="messageForm" method="post" action="/send">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group textarea-wrapper">
                 <textarea
                     name="message"
                     id="messageInput"
-                    placeholder="Promise, anonymous talaga 'to.
-- GM"
+                    placeholder="Promise, anonymous talaga 'to.&#10;- GM"
                     maxlength="{{ message_max_length }}"
                     required
                 ></textarea>
+
+                <button type="button" id="diceBtn" class="dice-btn" title="Random Question">
+                    🎲
+                </button>
             </div>
 
             <div class="form-meta">
@@ -112,6 +118,67 @@
                 setButtonState(false);
             }
         });
+
+        // 100 Preset Questions (Taglish/English mix)
+const allPresets = [
+    "Kumusta araw mo?", "Ano fave food mo?", "Drop a hint about your crush 👀",
+    "What's your biggest regret?", "Miss mo na ba siya?", "Kape tayo?",
+    "Anong ulam niyo ngayon?", "Sino huli mong kachat?", "What makes you smile?",
+    "Pahingi naman ng life advice.", "If you had 1 million pesos, anong unang bibilhin mo?",
+    "Ano 'yung pinaka-embarrassing moment mo?", "Penge song recommendation!",
+    "Are you happy right now?", "Ano pangarap mo nung bata ka?", "Anong pet peeve mo?",
+    "If you could time travel, past or future?", "What's keeping you awake at night?",
+    "Describe yourself in 3 words.", "Ano 'yung red flag para sa'yo?", "Green flags in a person?",
+    "Favorite movie of all time?", "Kailan ka huling umiyak?", "What are you grateful for today?",
+    "Anong kanta nagpapaiyak sa'yo?", "Sino ang safe space mo?", "Do you believe in second chances?",
+    "Ano 'yung comfort food mo?", "Pineapple on pizza: Yes or No?", "Kung uulan ng pera, magkano sasaluhin mo?",
+    "Ano 'yung greatest fear mo?", "Kailan ka pinakamasaya?", "Secret talent mo?",
+    "What's your toxic trait?", "Coffee or Tea?", "Late night or Early morning?",
+    "Ano 'yung 'what if' mo sa buhay?", "Who inspires you the most?", "Favorite memory natin?",
+    "First impression mo sa akin?", "Anong una mong napansin sa akin?", "Galit ka ba sa akin?",
+    "Ano 'yung paborito mong subject dati?", "Dogs or Cats?", "Ideal date mo?",
+    "If you could live anywhere, saan?", "Ano pinaka-proud moment mo?", "Do you believe in aliens?",
+    "What's the best compliment you've received?", "Ano 'yung comfort show mo?",
+    "Kung magiging hayop ka, ano ka at bakit?", "Saan ka pumupunta pag malungkot ka?",
+    "Anong ginagawa mo pag stressed ka?", "Paboritong kanta sa karaoke?", "Last na napanood mo sa Netflix?",
+    "Ano 'yung unpopular opinion mo?", "Introvert or Extrovert?", "Text or Call?",
+    "Ano 'yung pinaka-weird na panaginip mo?", "Naniniwala ka ba sa multo?", "Favorite holiday?",
+    "Anong pinaka-useless talent mo?", "Kung may superpower ka, ano 'yon?",
+    "Ano 'yung best purchase mo this year?", "Sino paborito mong artist?", "Mountains or Beach?",
+    "Ano 'yung biggest plot twist ng buhay mo?", "Kung may isusulat kang libro, anong title?",
+    "Ano 'yung favorite quote mo?", "Anong advice ibibigay mo sa younger self mo?",
+    "Do you prefer to cook or eat out?", "Ano 'yung go-to order mo sa fast food?",
+    "Anong pinaka-matagal mong tulog?", "Ano 'yung huling picture sa gallery mo?",
+    "Favorite childhood memory?", "Ano 'yung pinaka-masakit na salita na narinig mo?",
+    "Sino 'yung the one that got away mo?", "Anong love language mo?", "Do you believe in right person, wrong time?",
+    "Ano 'yung biggest turn-off para sa'yo?", "Ano 'yung huling kasinungalingan mo?",
+    "Anong paborito mong scent/amoy?", "Kung pwede mong baguhin ang pangalan mo, ano ipapalit mo?",
+    "Anong pinaka-ayaw mong gawaing bahay?", "Ilang oras ka nag-cecellphone sa isang araw?",
+    "Ano 'yung guilty pleasure mo?", "Sino 'yung taong hindi mo kayang mawala?",
+    "Ano 'yung pinaka-mahal na nabili mo para sa sarili mo?", "Anong app ang pinaka-madalas mong gamitin?",
+    "Ano 'yung favorite ice cream flavor mo?", "Naniniwala ka ba sa astrology?",
+    "Anong gusto mong matutunan na skill?", "Ano 'yung paborito mong tambayan?",
+    "Kung may 1 day ka na lang, anong gagawin mo?", "Anong paborito mong laro nung bata ka?",
+    "Sino 'yung huling taong niyakap mo?", "Ano 'yung pinaka-cute na bagay na nakita mo today?",
+    "Anong pinaka-nakakatawang joke na alam mo?", "Ano 'yung gusto mong ma-achieve before 30?",
+    "Mahal mo ba ako? Joke."
+];
+
+const diceBtn = document.getElementById('diceBtn');
+// Notice that I completely removed the second 'messageInput' line here!
+
+// When the dice is clicked, put a random question in the box
+diceBtn.addEventListener('click', function() {
+    // Pick a random index from the array
+    const randomIndex = Math.floor(Math.random() * allPresets.length);
+    const randomQuestion = allPresets[randomIndex];
+
+    // Set the text, update the counter, and focus the box
+    messageInput.value = randomQuestion;
+    updateCharacterCount();
+    messageInput.focus();
+});
+
     </script>
 </body>
 </html>
